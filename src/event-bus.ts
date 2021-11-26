@@ -71,15 +71,14 @@ export class EventBus<EventBase extends IEvent = IEvent>
 
   registerSagas(types: Type<unknown>[] = []) {
     const sagas = types
-      .map((target) => {
+      .flatMap((target) => {
         const metadata = Reflect.getMetadata(SAGA_METADATA, target) || [];
         const instance = this.moduleRef.get(target, { strict: false });
         if (!instance) {
           throw new InvalidSagaException();
         }
         return metadata.map((key: string) => instance[key].bind(instance));
-      })
-      .reduce((a, b) => a.concat(b), []);
+      });
 
     sagas.forEach((saga) => this.registerSaga(saga));
   }
